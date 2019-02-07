@@ -22,7 +22,11 @@ local Assets = {}
 		defaultPawn = l.ni("assets/default_pawn.png"),
 
 		---- Charecters
-		enemy1 = l.ni("assets/chars/slimeBlock.png"),
+		enemy_lvl_1 = l.ni("assets/chars/enemies/lvl_1.png"),
+		enemy_lvl_2 = l.ni("assets/chars/enemies/lvl_2.png"),
+		enemy_lvl_3 = l.ni("assets/chars/enemies/lvl_3.png"),
+		enemy_lvl_4 = l.ni("assets/chars/enemies/lvl_4.png"),
+		enemy_lvl_5 = l.ni("assets/chars/enemies/lvl_5.png"),
 
 		-- Towers
 		tower_basic = l.ni("assets/towers/tower_basic.png"),
@@ -38,6 +42,10 @@ local Assets = {}
 		-- corner_bl = l.ni("assets/ui/corner_bl_s.png"),
 		-- corner_br = l.ni("assets/ui/corner_br_s.png"),
 		bg = l.ni("assets/ui/bg.png"),
+		coin = l.ni("assets/ui/coin.png"),
+		score = l.ni("assets/ui/score.png"),
+		flag = l.ni("assets/ui/flag.png"),
+		heart = l.ni("assets/ui/heart.png"),
 		border_h = l.ni("assets/ui/border_h.jpg"),
 		
 		---- Buttons
@@ -49,7 +57,15 @@ local Assets = {}
 		startScreen = l.ni("assets/others/startScreen.png"),
 		endScreen = l.ni("assets/others/endScreen.png"),
 		emptySelection = l.ni("assets/others/emptySelection.png"),
+	}
 
+	Assets.enemies = {
+		---- Charecters
+		l.ni("assets/chars/enemies/lvl_1.png"),
+		l.ni("assets/chars/enemies/lvl_2.png"),
+		l.ni("assets/chars/enemies/lvl_3.png"),
+		l.ni("assets/chars/enemies/lvl_4.png"),
+		l.ni("assets/chars/enemies/lvl_5.png"),
 	}
 
 	Assets.sounds = {

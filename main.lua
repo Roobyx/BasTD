@@ -6,7 +6,8 @@ Settings = require "modules/Settings"
 UI = require "modules/UI"
 Tower = require "game/tower"
 Enemy = require "game/enemy"
-FpsGraph = require "modules/FPSGraph"
+FpsGraph = require "modules/vendor/FPSGraph"
+ripple = require "modules/vendor/ripple"
 
 -- Logging on/off
 local debug = true
@@ -26,7 +27,11 @@ function love.load()
 	-- Game settings
 	windowWidth  = love.graphics.getWidth()
 	windowHeight = love.graphics.getHeight()
+	
+	source = love.audio.newSource( "assets/audio/menu.mp3", "static" )
 
+	-- love.sound.newSoundData('assets/audio/menu.mp3')
+	menuMusic = ripple.newSound(source, options)
 	
 	-- Load the map
 	MapTools.loadMap()
@@ -55,12 +60,16 @@ function love.load()
 	game_state = 1
 	
 	print(windowHeight, windowWidth)
-	print('-----------------------------------------------LOADED------------------------------------------------------')
 	print('Game State: ', game_state)
+	menuMusic:play()
+	print('A: ', Assets.enemies[1])
+	print('WI: ', wave_index)
+	print('-----------------------------------------------LOADED------------------------------------------------------')
+
+
 	-- ---------------------------------------
 	-- ---------------------------------------
 	-- ---------------------------------------
-	-- --------------------------------------- ON LOSE MESSAGE: "YOU FAILED SUCCSSESFULLY"
 	-- ---------------------------------------
 	-- --------------------------------------- IMAGES TO newQuad - from spritesheet
 	-- ---------------------------------------
@@ -75,8 +84,6 @@ function randomUpdate(graph, dt, n)
 	FpsGraph.updateGraph(graph, val, "Random: " .. math.floor(val*10)/10, dt)
 end
 
-
-
 function inMapBounds()
 	local x, y = love.mouse.getPosition()
 
@@ -89,6 +96,8 @@ end
 
 function nextGameState()
 	game_state = game_state + 1
+	menuMusic:stop()
+
 	print('State changed to: ', game_state)
 end
 
@@ -100,15 +109,13 @@ function love.update(dt)
 	next_time = next_time + min_dt
 	Settings.timer = Settings.timer + dt
 
+
 	
 	if game_state == 2 then
-
-
 		Enemy.update(dt)
 
 		-- update graphs using the update functions included in fpsGraph
 		FpsGraph.updateFPS(testGraph, dt)
-
 
 		Tower.checkRange(dt)
 		
@@ -117,6 +124,19 @@ function love.update(dt)
 			v.y = v.y + (v.dy * dt)
 		end
 
+		-- Upgrade enemies and create next wave dynamically
+		if #activeWave < 1 then
+			wave_timer_current = wave_timer_current - dt
+
+			if wave_timer_current < 1 then
+				wave_index = wave_index + 1
+				Enemy.upgradeEnemy()
+				enemiesLeft = 30
+				wave_timer_current = wave_timer_reset
+			end
+		end
+
+		-- End the game
 		if player_lives == 0 then
 		-- if player_lives < 50 then
 			splashScreen = Assets.images.endScreen
@@ -177,11 +197,6 @@ function love.draw()
 			-- end
 
 			-- Tower.drawNeighbours()
-
-			
-			l.p('Lives: ' .. player_lives, 700, 700)
-			l.p('Score: ' .. player_score, 700, 720)
-			l.p('Gold: ' .. player_gold, 700, 750)
 
 
 			if inMapBounds() then

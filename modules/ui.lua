@@ -44,6 +44,27 @@ function UI.draw()
 		l.d(Assets.images.button_tower_basic , 32, 662)
 		l.d(Assets.images.button_tower_medium , 152, 662)
 		l.d(Assets.images.button_tower_advanced , 272, 662)
+
+		-- Info
+		l.p(player_score, 900, 690)
+		l.d(Assets.images.score, 870, 690)
+
+		l.p(player_lives, 900, 720)
+		l.d(Assets.images.heart, 870, 720)
+
+
+		l.p(player_gold, 900, 750)
+		l.d(Assets.images.coin, 870, 747)
+
+		l.p('Wave #: ' .. wave_index, 630, 720)
+
+		l.d(Assets.images.flag, 600, 690)
+		if wave_timer_current > 0 then
+			l.p('Next wave in: ' .. math.floor(wave_timer_current+0.5), 630, 690)
+		else
+			l.p('Next wave in: Wave is still active', 630, 690)
+		end
+
 end
 
 return UI

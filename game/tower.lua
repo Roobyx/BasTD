@@ -32,11 +32,12 @@ bulletSpeed = 1000
 bullets = {}
 startX = 0
 startY = 0
+flyTimer = 0.02
 
 
 -- Temp delay fix
-defaultDelays = {0.1, 0.5}
-
+defaultDelays = {0.35, 0.75}
+flyTimer = defaultDelays[1] / 20
 
 currentTower = {}
 towersOnMap = {}
@@ -62,7 +63,7 @@ function tower.drawNeighbours()
 	for i = 1, #towersOnMap, 1 do
 		for a = 1, #towersOnMap[i].neighbours, 1 do
 			print(towersOnMap[i].neighbours[a][1], towersOnMap[i].neighbours[a][2])
-			-- l.d(Assets.images.selection, map[towersOnMap[i].neighbours[a][1]][towersOnMap[i].neighbours[a][1]].xPos, map[towersOnMap[i].neighbours[a][1]][towersOnMap[i].neighbours[a][2]].yPos)
+			l.d(Assets.images.selection, map[towersOnMap[i].neighbours[a][1]][towersOnMap[i].neighbours[a][1]].xPos, map[towersOnMap[i].neighbours[a][1]][towersOnMap[i].neighbours[a][2]].yPos)
 		end
 		print('----------------!-------------------')
 	end
@@ -99,45 +100,58 @@ function tower.checkRange(dt)
 				local cTower = towersOnMap[b]
 
 				cTower.reloadDelay = cTower.reloadDelay - dt
+				-- print('tower delay', cTower.reloadDelay)
 				if cTower.reloadDelay <= 0 then
+
 					if #activeWave > 0 then
 						
 						-- if cTower.enemyQue > 0 then
 							-- cTower.enemyQue = cTower.enemyQue - 1
 
-							if cEnemy.currentTile.my == cTower.neighbours[a][1] and cEnemy.currentTile.mx == cTower.neighbours[a][2] then
-								-- $Shooting
-								-- The tower shoots the enemy and removes hp equal to the its dmg
-								
-								cEnemy.hp = cEnemy.hp - cTower.dmg
+							if cEnemy ~= nil then -- Should prevent the accessing of an enemy that has already been killed (and removed from the table)
+								if cEnemy.currentTile.my == cTower.neighbours[a][1] and cEnemy.currentTile.mx == cTower.neighbours[a][2] then
+									-- $Shooting
+									-- The tower shoots the enemy and removes hp equal to the its dmg
+									
+									cEnemy.hp = cEnemy.hp - cTower.dmg
 
 
-								-- Bullets
-								startX = cTower.xPos + 32
-								startY = cTower.yPos + 32
-								
-								local targetX = cEnemy.xPos
-								local targetY = cEnemy.yPos
-						
-								local angle = math.atan2((targetY - startY), (targetX - startX))
-						
-								local bulletDx = bulletSpeed * math.cos(angle)
-								local bulletDy = bulletSpeed * math.sin(angle)
-								table.insert(bullets, {x = startX, y = startY, dx = bulletDx, dy = bulletDy})
+									-- Bullets
+									local flyTimer = flyTimer - dt
 
-								if cEnemy.currentTile.my == bulletDy and cEnemy.currentTile.mx == bulletDx then
-									table.remove(bullets, #bullets)
+									startX = cTower.xPos + 32
+									startY = cTower.yPos + 32
+									
+									local targetX = cEnemy.xPos
+									local targetY = cEnemy.yPos
+							
+									local angle = math.atan2((targetY - startY), (targetX - startX))
+							
+									local bulletDx = bulletSpeed * math.cos(angle)
+									local bulletDy = bulletSpeed * math.sin(angle)
+									table.insert(bullets, {x = startX, y = startY, dx = bulletDx, dy = bulletDy})
+
+									if flyTimer <= 0 then
+										table.remove(bullets, #bullets-1)
+										-- Delete bullet after a 0.02 sec delay
+										flyTimer = cTower.reloadDelay / 20
+									end
+									
+									-- if bulletDy > cEnemy.currentTile.my  or bulletDx > cEnemy.currentTile.mx then
+									-- 	table.remove(bullets, #bullets)
+									-- end
+
+
+
+
+									-- Remove enemy
+									if cEnemy.hp < 0 then
+										table.remove(activeWave, i)
+										player_gold = player_gold + 100
+										player_score = player_score + Enemy.calculateReward(cEnemy)
+									end
+									-- cTower.enemyQue = cTower.enemyQue + 1
 								end
-
-
-								-- Remove enemy
-								if cEnemy.hp < 0 then
-									table.remove(activeWave, i)
-									player_gold = player_gold + 100
-									player_score = player_score + Enemy.calculateReward(cEnemy)
-								end
-								-- cTower.enemyQue = cTower.enemyQue + 1
-
 							end
 						-- end
 
@@ -156,9 +170,9 @@ end
 
 function tower.bulletsDraw()
 	for i,v in ipairs(bullets) do
-		l.d(Assets.images.bullet_basic, v.y, v.x)
+		-- l.d(Assets.images.bullet_basic, v.y, v.x)
 	
-		-- love.graphics.circle("fill", v.y, v.x, 3)
+		love.graphics.circle("fill", v.y, v.x, 3)
 	end
 end
 
@@ -166,7 +180,7 @@ end
 function tower.selectTower(x, y)
 	if x < 132 then
 		-- print('Basic tower selected')
-		return createTower('basic', Assets.images.tower_basic, 10, 1, 1, 1000)
+		return createTower('basic', Assets.images.tower_basic, 10, 1, 3, 1000)
 	elseif x > 162 and x < 262 then
 		-- print('Medium tower selected')
 		return createTower('medium', Assets.images.tower_medium, 50, 2, 1, 5000)
@@ -197,6 +211,15 @@ function tower.placeTower(tempTower)
 	end
 end
 
+function checkGold(tempTower)
+	if(player_gold >= tempTower.cost) then
+		player_gold = player_gold - tempTower.cost
+		return true
+	else
+		return false
+	end
+end
+
 
 function love.mousepressed(x, y, button)
 	if game_state == 2 then
@@ -209,7 +232,11 @@ function love.mousepressed(x, y, button)
 		-- Or if outside the menu and click place the tower
 		elseif button == 1 and inMapBounds() then
 			if selectionState == 1 then
-				Tower.placeTower(currentTower)
+
+				if(checkGold(currentTower)) then
+					Tower.placeTower(currentTower)
+				end
+
 				selectionState = 0
 			end
 		elseif button == 2 then

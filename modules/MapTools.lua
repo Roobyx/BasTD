@@ -145,41 +145,46 @@ end
 function MapTools.getNextCell(map, pc, cc)
 	-- look at flood-fill
 	local nextCell = cc
+	local direction = 0
 
 	if nextCell.my <= 10 and nextCell.my > 0 and nextCell.mx <= 15 and nextCell.mx > 0 then
 
 		if pc == nil then
 			if map[cc.my-1][cc.mx].type == 'path' then
+				direction = 270
 				nextCell = map[cc.my-1][cc.mx]
 			elseif map[cc.my+1][cc.mx].type == 'path' then
+				direction = 90
 				nextCell = map[cc.my+1][cc.mx]
 			elseif map[cc.my][cc.mx-1].type == 'path' then
+				direction = 180
 				nextCell = map[cc.my][cc.mx-1]
 			elseif map[cc.my][cc.mx+1].type == 'path' then
 				nextCell = map[cc.my][cc.mx+1]
 			end
 		else
+			-- up
 			if map[cc.my-1][cc.mx] ~= nil and map[cc.my-1][cc.mx].type == 'path' and map[cc.my-1][cc.mx].id ~= pc.id then
 				nextCell = map[cc.my-1][cc.mx]
+				direction = 270
+			-- Down
 			elseif map[cc.my+1][cc.mx] ~= nil and map[cc.my+1][cc.mx].type == 'path' and map[cc.my+1][cc.mx].id ~= pc.id then
 				nextCell = map[cc.my+1][cc.mx]
+				direction = 90
+			-- Left
 			elseif map[cc.my][cc.mx-1] ~= nil and map[cc.my][cc.mx-1].type == 'path' and map[cc.my][cc.mx-1].id ~= pc.id then
 				nextCell = map[cc.my][cc.mx-1]
+				direction = 180
+			-- Right
 			elseif map[cc.my][cc.mx+1] ~= nil and map[cc.my][cc.mx+1].type == 'path' and map[cc.my][cc.mx+1].id ~= pc.id then
 				nextCell = map[cc.my][cc.mx+1]
+				direction = 0
 			end
 		end
 
 	end
 	
-	-- print('prev: [', cc.mx, '][', cc.my, '] next: ', '[', nextCell.mx, '][', nextCell.my, ']')
-	
-	-- if cc.isLast == true then
-	-- 	-- print('LAST')
-	-- 	return cc, cc, true
-	-- else
-		return cc, nextCell
-	-- end
+	return cc, nextCell, direction
 end
 
 function MapTools.loadMap()

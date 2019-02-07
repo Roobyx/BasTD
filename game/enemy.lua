@@ -3,9 +3,9 @@ MapTools = require "modules/MapTools"
 Settings = require "modules/Settings"
 l = require "modules/l"
 
-local defaultImg = Assets.images.enemy1
-spawnTimer = 0
-enemiesLeft = 30
+-- local defaultImg = Assets.images.enemy_lvl_1
+
+
 counter  = 0
 
 
@@ -13,20 +13,21 @@ counter  = 0
 enemy = {
 	state = 1,
 	name = 'Enemy',
-	img = defaultImg,
+	img = Assets.enemies[1],
 	xPos = 65,
 	yPos = 129,
 	prevTile = {},
 	currentTile = {},
 	speed = 4,
-	hp = 1000,
+	hp = 500,
 	mana = 100,
 	rechargeTimer = 2,
 	onMap = false,
-	reward = 100
+	direction = 0,
+	xOffset = 0,
+	yOffset = 0
 }
 
-activeWave = {}
 
 function enemy:new(o)
 	o = o or {}
@@ -40,13 +41,29 @@ function enemy.update(dt)
 	enemy.spawn(dt)
 	
 	for i,pawn in ipairs(activeWave) do
-		local prevTile, nextTile = MapTools.getNextCell(map, pawn.prevTile, pawn.currentTile)
+		local prevTile, nextTile, e_direction = MapTools.getNextCell(map, pawn.prevTile, pawn.currentTile)
 
 		if prevTile.isLast then
 			table.remove(activeWave, i)
 			player_lives = player_lives - 1
 		end
+		
+		pawn.direction = math.rad(e_direction)
 
+		if e_direction == 180 then
+			pawn.xOffset = 64
+			pawn.yOffset = 64
+		elseif e_direction == 270 then
+			pawn.xOffset = 0
+			pawn.yOffset = 0
+		elseif e_direction == 90 then
+			pawn.xOffset = 64 
+			pawn.yOffset = 64
+		else
+			pawn.xOffset = 0
+			pawn.yOffset = 0
+		end
+		
 		if pawn.xPos > nextTile.xPos then
 			if nextTile.xPos > pawn.xPos - pawn.speed then
 				pawn.xPos = nextTile.xPos
@@ -82,7 +99,12 @@ end
 function enemy.draw()
 	for i,enemy in ipairs(activeWave) do
 		if enemy.onMap then
-			l.d(enemy.img , enemy.yPos, enemy.xPos)
+			-- if enemy.direction == math.pi or 0 then
+				-- l.d(enemy.img, enemy.yPos, enemy.xPos, enemy.direction, 1, 1)
+				l.d(enemy.img, enemy.yPos, enemy.xPos, enemy.direction, 1, 1, enemy.xOffset, enemy.yOffset)
+			-- else
+			-- 	l.d(enemy.img, enemy.yPos, enemy.xPos, enemy.direction, 1, 1, 64, 64)
+			-- end
 		end
 	end
 end
@@ -96,7 +118,7 @@ function enemy.spawn(dt)
 		enemy.prevTile = map[3][2]
 		enemy.currentTile = map[3][3]
 
-		enemy.name = 'Enemy' .. counter
+		enemy.name = enemy.name .. ' ' .. counter
 		enemy.onMap = true
 
 		if enemiesLeft > 0 then
@@ -110,6 +132,17 @@ end
 
 function enemy.calculateReward(target)
 	return ((target.hp * target.speed)/2) * -1
+end
+
+function enemy.upgradeEnemy()
+	enemy.name = 'Enemy' .. ' ' .. wave_index
+	enemy.img = Assets.enemies[wave_index]
+
+	enemy.speed = enemy.speed + 0.5
+	enemy.hp = enemy.hp + 50
+	enemy.mana = enemy.mana + 100
+
+	print('Enemy upgraded')
 end
 
 return enemy

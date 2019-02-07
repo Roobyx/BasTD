@@ -30,10 +30,23 @@ function Settings.load()
 		minheight=Settings.defaultHeight
 	})
 
-	
+	-- Player settings
 	player_lives = 50
-	player_gold = 0
+	player_gold = 2000
 	player_score = 0
+
+
+	-- Wave settings
+	wave_index = 1
+	wave_timer_current = 15
+	wave_timer_reset = 15
+	wave_default_count = 30
+
+	-- Enemies
+	spawnTimer = 0
+	enemiesLeft = 30
+	-- enemiesLeft = 1
+	activeWave = {}
 end
 
 return Settings

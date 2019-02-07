@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.2.2" orientation="orthogonal" renderorder="right-down" width="15" height="10" tilewidth="64" tileheight="64" infinite="0" nextlayerid="2" nextobjectid="1">
+ <tileset firstgid="1" source="res/allSprites.tsx"/>
+ <layer id="1" name="Tile Layer 1" width="15" height="10">
+  <data encoding="base64" compression="zlib">
+   eJytkUEKACAIBK3ulYf+/9UKDBZJLOowCOosgo2I2gNhEKV65EFSbpXepKg9hGWGLhLJv2W5Op83Lu4UcK38uslbmZ5r8cvF207gi/9bdCHWBSg=
+  </data>
+ </layer>
+</map>
